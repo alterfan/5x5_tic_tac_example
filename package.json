@@ -6,8 +6,7 @@
 	"license": "MIT",
 	"homepage": "https://github.com/altrefan/5x5.github.io.git",
 	"scripts": {
-		"dev": "webpack-dev-server --host 192.168.1.185",
-		"start": "node webpackdevserver.js",
+		"start": "webpack-dev-server --host 192.168.1.185",
 		"build": "webpack"
 	},
 	"repository": {

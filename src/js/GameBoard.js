@@ -18,9 +18,9 @@ export default class GameBoard extends Phaser.Scene {
 		this.state = { scorePlayer: 0, scoreAI: 0, whoseTurn: 'x', lastUpdates: [null, null], gameEnd: false }
 	}
 	preload() {
-		this.load.image('x', '/dist/assets/images/x.png')
-		this.load.image('o', '/dist/assets/images/o.png')
-		this.load.image('play_again', 'assets/images/play_again.png')
+		this.load.image('x', './assets/images/x.png')
+		this.load.image('o', './assets/images/o.png')
+		this.load.image('play_again', './assets/images/play_again.png')
 		this.graphics = this.add.graphics({ lineStyle: { width: 2, color: 0xffffff } }).setInteractive()
 	}
 	create() {
