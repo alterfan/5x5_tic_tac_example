@@ -26,7 +26,7 @@ function switchTurn(whoseTurn) {
 }
 function getChar(matrix, row, col) {
 	if (0 <= row && row < Defaults.ROWS_COLS && 0 <= col && col < Defaults.ROWS_COLS) {
-		return board[row * Defaults.ROWS_COLS + col]
+		return matrix[row * Defaults.ROWS_COLS + col]
 	} else {
 		return '*'
 	}
@@ -134,7 +134,7 @@ function aiMakeMove(matrix, player) {
 	var move_result = null
 	//defense
 	for (var i = 0; i < Defaults.ROWS_COLS * Defaults.ROWS_COLS; i++) {
-		if (board[i] == '0') {
+		if (matrix[i] == '0') {
 			var result = getStateResult(getBoardCopy(matrix, i, enemy), enemy)
 			if (best_result == null) {
 				best_pos = i
@@ -163,22 +163,22 @@ function aiMakeMove(matrix, player) {
 		var count_before = checkRow(matrix, 3, me)
 		var count_before_4 = checkRow(matrix, 4, me)
 		for (var i = 0; i < Defaults.ROWS_COLS * Defaults.ROWS_COLS; i++) {
-			if (board[i] == '0') {
-				var temp_board = getBoardCopy(matrix, i, me)
+			if (matrix[i] == '0') {
+				var tempMatrix = getBoardCopy(matrix, i, me)
 				if (best_result['4o'] == 0) {
 					// + best_result['3o']
-					var count = checkRow(temp_board, 4, me)
+					var count = checkRow(tempMatrix, 4, me)
 					var result = count['closed'] - count_before_4['closed']
 					if (result > 0) {
 						best_pos = i
 					}
-					var count = checkRow(temp_board, 3, me)
+					var count = checkRow(tempMatrix, 3, me)
 					var result = count['opened'] - count_before['opened']
 					if (result > 0) {
 						best_pos = i
 					}
 				}
-				var count = checkRow(temp_board, 4, me)
+				var count = checkRow(tempMatrix, 4, me)
 				var result = count['opened']
 				if (result > 0) {
 					best_pos = i
@@ -189,7 +189,7 @@ function aiMakeMove(matrix, player) {
 	}
 	//win move
 	for (var i = 0; i < Defaults.ROWS_COLS * Defaults.ROWS_COLS; i++) {
-		if (board[i] == '0') {
+		if (matrix[i] == '0') {
 			var count = checkRow(getBoardCopy(matrix, i, me), 5, me)
 			var result = count['opened'] + count['closed']
 			if (result > 0) {
@@ -198,17 +198,17 @@ function aiMakeMove(matrix, player) {
 			}
 		}
 	}
-	if (board[best_pos] != '0') {
-		alert('superposition! = ' + best_pos + ' = ' + board[best_pos])
+	if (matrix[best_pos] != '0') {
+		alert('superposition! = ' + best_pos + ' = ' + matrix[best_pos])
 	}
 	return best_pos
 }
 function getBoardCopy(matrix, pos, symbol) {
-	var temp_board = []
+	var tempMatrix = []
 	for (var i = 0; i < Defaults.ROWS_COLS * Defaults.ROWS_COLS; i++) {
-		temp_board.push(board[i])
+		tempMatrix.push(matrix[i])
 	}
-	temp_board[pos] = symbol
-	return temp_board
+	tempMatrix[pos] = symbol
+	return tempMatrix
 }
 export { Dom, Transform, switchTurn, getStateResult, getChar, getBoardCopy, checkRow, isBetter, aiMakeMove }

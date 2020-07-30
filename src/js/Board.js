@@ -104,7 +104,7 @@ export default class Board extends Phaser.GameObjects.Container {
 			this.draw(pos)
 			this.state.whoseTurn = 'o'
 		} else if (this.state.whoseTurn == 'o') {
-			var move = bot_move(this.matrix, this.last_move)
+			var move = aiMakeMove(this.matrix, this.last_move)
 			this.draw(move)
 			this.state.whoseTurn = 'x'
 		}
@@ -172,11 +172,11 @@ export default class Board extends Phaser.GameObjects.Container {
 		var winning = 0
 		for (var row = 0; row < this.sideCellsCount; row++) {
 			for (var col = 0; col < this.sideCellsCount; col++) {
-				if (get_symbol(this.matrix, row, col) != '0') {
+				if (getChar(this.matrix, row, col) != '0') {
 					// horizontal
 					if (col <= this.sideCellsCount - rule) {
 						winning = 1
-						while (get_symbol(this.matrix, row, col) == get_symbol(this.matrix, row, col + winning)) {
+						while (getChar(this.matrix, row, col) == getChar(this.matrix, row, col + winning)) {
 							winning += 1
 						}
 						if (winning >= rule) {
@@ -187,7 +187,7 @@ export default class Board extends Phaser.GameObjects.Container {
 					if (row <= this.sideCellsCount - rule) {
 						// |
 						winning = 1
-						while (get_symbol(this.matrix, row, col) == get_symbol(this.matrix, row + winning, col)) {
+						while (getChar(this.matrix, row, col) == getChar(this.matrix, row + winning, col)) {
 							winning += 1
 						}
 						if (winning >= rule) {
@@ -196,7 +196,7 @@ export default class Board extends Phaser.GameObjects.Container {
 						// /
 						if (col >= rule - 1) {
 							winning = 1
-							while (get_symbol(this.matrix, row, col) == get_symbol(this.matrix, row + winning, col - winning)) {
+							while (getChar(this.matrix, row, col) == getChar(this.matrix, row + winning, col - winning)) {
 								winning += 1
 							}
 							if (winning >= rule) {
@@ -206,7 +206,7 @@ export default class Board extends Phaser.GameObjects.Container {
 						// \o
 						if (col <= this.sideCellsCount - rule) {
 							winning = 1
-							while (get_symbol(this.matrix, row, col) == get_symbol(this.matrix, row + winning, col + winning)) {
+							while (getChar(this.matrix, row, col) == getChar(this.matrix, row + winning, col + winning)) {
 								winning += 1
 							}
 							if (winning >= rule) {
