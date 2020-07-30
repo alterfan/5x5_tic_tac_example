@@ -1,0 +1,27 @@
+{
+	"name": "5x5",
+	"version": "1.0.0",
+	"description": "",
+	"author": "Vasiliy Printsev",
+	"license": "MIT",
+	"homepage": "https://github.com/altrefan/5x5.github.io.git",
+	"scripts": {
+		"dev": "webpack-dev-server --host 192.168.1.185",
+		"start": "node webpackdevserver.js",
+		"build": "webpack"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/altrefan/5x5.github.io.git"
+	},
+	"dependencies": {
+		"phaser": "^3.23.0",
+		"webpack-dev-server": "^3.10.1"
+	},
+	"devDependencies": {
+		"html-loader": "^0.5.5",
+		"html-webpack-plugin": "^3.2.0",
+		"webpack": "^4.41.5",
+		"webpack-cli": "^3.3.10"
+	}
+}
