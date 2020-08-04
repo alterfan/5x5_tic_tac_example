@@ -15,7 +15,6 @@ import Cell from './Cell.js'
 export default class GameBoard extends Phaser.Scene {
 	constructor() {
 		super({ key: 'GameBoard' })
-		this.state = { scorePlayer: 0, scoreAI: 0, whoseTurn: 'x', lastUpdates: [null, null], gameEnd: false }
 	}
 	preload() {
 		this.load.image('x', './assets/images/x.png')
@@ -24,7 +23,7 @@ export default class GameBoard extends Phaser.Scene {
 		this.graphics = this.add.graphics({ lineStyle: { width: 2, color: 0xffffff } }).setInteractive()
 	}
 	create() {
-		var self = this
+		this.state = { scorePlayer: 0, scoreAI: 0, whoseTurn: 'x', lastUpdates: [null, null], gameEnd: false }
 		this.board = new Board(this, 0, 0, this.graphics)
 		this.input.setTopOnly(false)
 		this.scale.on('orientationchange', function (orientation) {
