@@ -1,16 +1,5 @@
 import {} from './Const.js'
 import Board from './Board.js'
-import {
-	Dom,
-	Transform,
-	switchTurn,
-	getStateResult,
-	getChar,
-	getBoardCopy,
-	checkRow,
-	isBetter,
-	aiMakeMove,
-} from './Helpers.js'
 import Cell from './Cell.js'
 export default class GameBoard extends Phaser.Scene {
 	constructor() {

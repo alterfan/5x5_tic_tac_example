@@ -1,6 +1,7 @@
 import {} from '../node_modules/phaser/dist/phaser.js'
 import GameBoard from './js/GameBoard.js'
 var game
+var TOTLIN, WINLINE, gameEnd
 function getById(i) {
 	return document.getElementById(i)
 }

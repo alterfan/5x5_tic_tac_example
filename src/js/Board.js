@@ -1,17 +1,7 @@
-import { Defaults } from './Const.js'
+import { Defaults,CHAR } from './Const.js'
+import AI from './AI.js'
 import Cell from './Cell.js'
-import Player from './Player.js'
-import {
-	Dom,
-	Transform,
-	switchTurn,
-	getStateResult,
-	getChar,
-	getBoardCopy,
-	checkRow,
-	isBetter,
-	aiMakeMove,
-} from './Helpers.js'
+import * as Helper from './Helpers.js'
 export default class Board extends Phaser.GameObjects.Container {
 	constructor(scene, x, y) {
 		super(scene)
@@ -23,18 +13,30 @@ export default class Board extends Phaser.GameObjects.Container {
 		this.height = this.sideCellsCount * this.cellSize
 		this.x = x
 		this.y = y
+		this.computer = new AI(this)
 		this.last_move = true
 		this.moves = 0
-		this._matrix = new Array()
-		for (var i = 0; i < this.sideCellsCount * this.sideCellsCount; i++) this._matrix.push('0')
-		this.cell_matrix = object_matrix(this._matrix.chunk(this.sideCellsCount))
+		this.initMatrix()
 		this.create()
 	}
+	initMatrix() {
+		/**
+		 * @method _matrix // board chars matrix
+		 * @type Array
+		 */
+		this._matrix = new Array() // board chars matrix
+		for (var i = 0; i < this.sideCellsCount * this.sideCellsCount; i++) this._matrix.push('0')
+		/**
+		 * @method c_mx // cell object matrix
+		 * @type Object
+		 */
+		this.c_mx = object_matrix(this.matrix.chunk(this.sideCellsCount))
+	}
 	create() {
-		for (const row in this.cell_matrix) {
-			const cell_row = this.cell_matrix[row]
-			for (const col in this.cell_matrix[row]) {
-				this.cell_matrix[row][col] = new Cell(
+		for (const row in this.c_mx) {
+			const cell_row = this.c_mx[row]
+			for (const col in this.c_mx[row]) {
+				this.c_mx[row][col] = new Cell(
 					this.scene,
 					[row, col],
 					this.cellSize * row,
@@ -42,8 +44,8 @@ export default class Board extends Phaser.GameObjects.Container {
 					this.cellSize,
 					this
 				)
-				this.cell_matrix[row][col].setInteractive()
-				this.cell_matrix[row][col]
+				this.c_mx[row][col].setInteractive()
+				this.c_mx[row][col]
 			}
 		}
 		const x = this.scene.scale.width / 2 - this.width / 2
@@ -57,32 +59,18 @@ export default class Board extends Phaser.GameObjects.Container {
 		for (let i = 0; i < this.sideCellsCount + 3; i++) {
 			if (m[i] == undefined) {
 				m[i] = {}
-				this.cell_matrix[i] = {}
+				this.c_mx[i] = {}
 				for (let n = 0; n < this.sideCellsCount + 3; n++) {
 					m[i][n] = '0'
-					this.cell_matrix[i][n] = new Cell(
-						this.scene,
-						[i, n],
-						this.cellSize * i,
-						this.cellSize * n,
-						this.cellSize,
-						this
-					)
-					this.cell_matrix[i][n].setInteractive()
+					this.c_mx[i][n] = new Cell(this.scene, [i, n], this.cellSize * i, this.cellSize * n, this.cellSize, this)
+					this.c_mx[i][n].setInteractive()
 				}
 			}
 			for (let n = 0; n < this.sideCellsCount + 3; n++) {
 				if (m[i][n] == undefined) {
 					m[i][n] = '0'
-					this.cell_matrix[i][n] = new Cell(
-						this.scene,
-						[i, n],
-						this.cellSize * i,
-						this.cellSize * n,
-						this.cellSize,
-						this
-					)
-					this.cell_matrix[i][n].setInteractive()
+					this.c_mx[i][n] = new Cell(this.scene, [i, n], this.cellSize * i, this.cellSize * n, this.cellSize, this)
+					this.c_mx[i][n].setInteractive()
 				}
 			}
 		}
@@ -94,19 +82,21 @@ export default class Board extends Phaser.GameObjects.Container {
 		this.scene.graphics.setPosition(this.x, this.y)
 		for (let row = 0; row < this.sideCellsCount; row++) {
 			for (let column = 0; column < this.sideCellsCount; column++) {
-				this.cell_matrix[row][column].update()
+				this.c_mx[row][column].update()
 			}
 		}
 	}
 	makeMove(cell) {
-		if (this.state.whoseTurn == 'x') {
+		const self = this
+		if (this.state.whoseTurn == CHAR.X && cell != undefined) {
+			console.log('cell: ', cell)
 			const pos = cell.id.reduce((a, b) => parseInt(b * 5) + parseInt(a))
 			this.draw(pos)
-			this.state.whoseTurn = 'o'
-		} else if (this.state.whoseTurn == 'o') {
-			var move = aiMakeMove(this.matrix, this.last_move)
-			this.draw(move)
-			this.state.whoseTurn = 'x'
+			this.state.whoseTurn = CHAR.O
+		} else if (this.state.whoseTurn == CHAR.O) {
+			this.computer.makeMove(this.matrix, self.draw)
+			this.draw(this.computer.getTargetPos())
+			this.state.whoseTurn = CHAR.X
 		}
 		let count = 0
 		this._matrix.forEach((val) => {
@@ -116,18 +106,29 @@ export default class Board extends Phaser.GameObjects.Container {
 		if (count >= sixteenPrecents) this.addCells()
 	}
 	draw(pos) {
-		const row = parseInt(pos / 5)
-		const col = pos - row * 5
-		if (this._matrix[pos] == '0') {
-			this._matrix[pos] = this.last_move ? 'x' : 'o'
-			const x = this.x + col * 100 + 50
-			const y = this.y + row * 100 + 50
-			this.cell_matrix[col][row].char = this.scene.add.image(x, y, this._matrix[pos])
-			this.checkWinner()
-			return true
-		} else {
-			return false
-		}
+		setTimeout(() => {
+			const row = parseInt(pos / this.sideCellsCount)
+			const col = pos - row * this.sideCellsCount
+			if (this.matrix[pos] == '0') {
+				this.matrix[pos] = Helper.getEnemyChar(this.state.whoseTurn)
+				const x = this.x + col * 100 + 50
+				const y = this.y + row * 100 + 50
+				this.c_mx[col][row].char = this.scene.add.image(x, y, this._matrix[pos]).setAlpha(0)
+				this.scene.tweens.add(
+					{
+						targets: this.c_mx[col][row].char,
+						alpha: 1,
+						duration: 200,
+						ease: 'Power2',
+					},
+					this
+				)
+				this.checkWinner()
+				return true
+			} else {
+				return false
+			}
+		}, 200)
 	}
 	checkWinner() {
 		var winner = this.winLine(this._matrix)
@@ -135,6 +136,7 @@ export default class Board extends Phaser.GameObjects.Container {
 			this.last_move = !this.last_move
 			if (!this.last_move) {
 				setTimeout(() => {
+					console.log('!winner', this.last_move)
 					this.makeMove()
 				}, 1)
 			}
@@ -147,16 +149,16 @@ export default class Board extends Phaser.GameObjects.Container {
 		this.scene.graphics.destroy()
 		for (let row = 0; row < this.sideCellsCount; row++) {
 			for (let column = 0; column < this.sideCellsCount; column++) {
-				if (this.cell_matrix[row][column].char !== null) this.cell_matrix[row][column].char.destroy()
-				this.cell_matrix[row][column].destroy()
-				delete this.cell_matrix[row][column]
+				if (this.c_mx[row][column].char !== null) this.c_mx[row][column].char.destroy()
+				this.c_mx[row][column].destroy()
+				delete this.c_mx[row][column]
 			}
 		}
 		const button_img = this.scene.add.image(0, 0, 'play_again')
 		const x = this.scene.scale.width / 2
 		const y = this.scene.scale.height / 2 - button_img.height / 2
 		const button = this.scene.add.zone(x, y, button_img.width, button_img.height)
-		const text = this.state.whoseTurn == 'x' ? 'ПОБЕДА' : 'ВЫ ПРОИГРАЛИ'
+		const text = this.state.whoseTurn == CHAR.X ? 'ПОБЕДА' : 'ВЫ ПРОИГРАЛИ'
 		const winner_text = this.scene.add.text(x, y, text, { font: 'Tahoma' })
 		winner_text.setOrigin(0.5, -2).setFontSize(80)
 		button.setInteractive()
@@ -172,11 +174,11 @@ export default class Board extends Phaser.GameObjects.Container {
 		var winning = 0
 		for (var row = 0; row < this.sideCellsCount; row++) {
 			for (var col = 0; col < this.sideCellsCount; col++) {
-				if (getChar(this.matrix, row, col) != '0') {
+				if (Helper.getChar(this.matrix, row, col) != '0') {
 					// horizontal
 					if (col <= this.sideCellsCount - rule) {
 						winning = 1
-						while (getChar(this.matrix, row, col) == getChar(this.matrix, row, col + winning)) {
+						while (Helper.getChar(this.matrix, row, col) == Helper.getChar(this.matrix, row, col + winning)) {
 							winning += 1
 						}
 						if (winning >= rule) {
@@ -187,7 +189,7 @@ export default class Board extends Phaser.GameObjects.Container {
 					if (row <= this.sideCellsCount - rule) {
 						// |
 						winning = 1
-						while (getChar(this.matrix, row, col) == getChar(this.matrix, row + winning, col)) {
+						while (Helper.getChar(this.matrix, row, col) == Helper.getChar(this.matrix, row + winning, col)) {
 							winning += 1
 						}
 						if (winning >= rule) {
@@ -196,7 +198,9 @@ export default class Board extends Phaser.GameObjects.Container {
 						// /
 						if (col >= rule - 1) {
 							winning = 1
-							while (getChar(this.matrix, row, col) == getChar(this.matrix, row + winning, col - winning)) {
+							while (
+								Helper.getChar(this.matrix, row, col) == Helper.getChar(this.matrix, row + winning, col - winning)
+							) {
 								winning += 1
 							}
 							if (winning >= rule) {
@@ -206,7 +210,9 @@ export default class Board extends Phaser.GameObjects.Container {
 						// \o
 						if (col <= this.sideCellsCount - rule) {
 							winning = 1
-							while (getChar(this.matrix, row, col) == getChar(this.matrix, row + winning, col + winning)) {
+							while (
+								Helper.getChar(this.matrix, row, col) == Helper.getChar(this.matrix, row + winning, col + winning)
+							) {
 								winning += 1
 							}
 							if (winning >= rule) {

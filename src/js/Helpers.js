@@ -1,4 +1,4 @@
-import { Defaults, Ids, Types } from './Const.js'
+import { Defaults, CHAR, Types } from './Const.js'
 const Dom = {
 	// FUNCTION dom element
 	getById: function (i) {
@@ -15,11 +15,22 @@ const Transform = {
 }
 function switchTurn(whoseTurn) {
 	switch (whoseTurn) {
-		case 'x':
-			whoseTurn = 'o'
+		case CHAR.X:
+			whoseTurn = CHAR.O
 			break
-		case 'o':
-			whoseTurn = 'x'
+		case CHAR.O:
+			whoseTurn = CHAR.X
+			break
+	}
+	return whoseTurn
+}
+function getEnemyChar(whoseTurn) {
+	switch (whoseTurn) {
+		case CHAR.X:
+			whoseTurn = CHAR.O
+			break
+		case CHAR.O:
+			whoseTurn = CHAR.X
 			break
 	}
 	return whoseTurn
@@ -121,88 +132,12 @@ function getStateResult(_board, symbol) {
 	var result = {}
 	for (var rule = 2; rule <= 6; rule++) {
 		var count = checkRow(_board, rule, symbol)
-		result[rule + 'o'] = count['opened']
+		result[rule + CHAR.O] = count['opened']
 		result[rule + 'c'] = count['closed']
 	}
 	return result
 }
-function aiMakeMove(matrix, player) {
-	var enemy = player ? 'o' : 'x'
-	var me = player ? 'x' : 'o'
-	var best_pos = 0
-	var best_result = null
-	var move_result = null
-	//defense
-	for (var i = 0; i < Defaults.ROWS_COLS * Defaults.ROWS_COLS; i++) {
-		if (matrix[i] == '0') {
-			var result = getStateResult(getBoardCopy(matrix, i, enemy), enemy)
-			if (best_result == null) {
-				best_pos = i
-				best_result = result
-				move_result = getStateResult(getBoardCopy(matrix, i, me), me)
-			} else {
-				var better_than = isBetter(result, best_result)
-				if (better_than == null) {
-					//get the best of two
-					result = getStateResult(getBoardCopy(matrix, i, me), me)
-					if (isBetter(result, move_result)) {
-						best_pos = i
-						move_result = result
-					}
-				} else {
-					if (better_than) {
-						best_pos = i
-						best_result = result
-					}
-				}
-			}
-		}
-	}
-	if (best_result['5o'] + best_result['5c'] == 0) {
-		//offense
-		var count_before = checkRow(matrix, 3, me)
-		var count_before_4 = checkRow(matrix, 4, me)
-		for (var i = 0; i < Defaults.ROWS_COLS * Defaults.ROWS_COLS; i++) {
-			if (matrix[i] == '0') {
-				var tempMatrix = getBoardCopy(matrix, i, me)
-				if (best_result['4o'] == 0) {
-					// + best_result['3o']
-					var count = checkRow(tempMatrix, 4, me)
-					var result = count['closed'] - count_before_4['closed']
-					if (result > 0) {
-						best_pos = i
-					}
-					var count = checkRow(tempMatrix, 3, me)
-					var result = count['opened'] - count_before['opened']
-					if (result > 0) {
-						best_pos = i
-					}
-				}
-				var count = checkRow(tempMatrix, 4, me)
-				var result = count['opened']
-				if (result > 0) {
-					best_pos = i
-					break
-				}
-			}
-		}
-	}
-	//win move
-	for (var i = 0; i < Defaults.ROWS_COLS * Defaults.ROWS_COLS; i++) {
-		if (matrix[i] == '0') {
-			var count = checkRow(getBoardCopy(matrix, i, me), 5, me)
-			var result = count['opened'] + count['closed']
-			if (result > 0) {
-				best_pos = i
-				break
-			}
-		}
-	}
-	if (matrix[best_pos] != '0') {
-		alert('superposition! = ' + best_pos + ' = ' + matrix[best_pos])
-	}
-	return best_pos
-}
+
 function getBoardCopy(matrix, pos, symbol) {
 	var tempMatrix = []
 	for (var i = 0; i < Defaults.ROWS_COLS * Defaults.ROWS_COLS; i++) {
@@ -211,4 +146,4 @@ function getBoardCopy(matrix, pos, symbol) {
 	tempMatrix[pos] = symbol
 	return tempMatrix
 }
-export { Dom, Transform, switchTurn, getStateResult, getChar, getBoardCopy, checkRow, isBetter, aiMakeMove }
+export { Dom, switchTurn, getStateResult, getChar, getBoardCopy, checkRow, isBetter, getEnemyChar }

@@ -6,10 +6,10 @@ const Defaults = {
 	P1: 1,
 	P2: 2,
 }
-const CHAR = {
+const Сhars = {
 	EMPTY: 0,
-	X: 'x',
-	O: 'o',
+	x: 'x',
+	o: 'o',
 }
 const Types = {
 	HUMAN: 1,
@@ -19,4 +19,4 @@ const char = {
 	x: 'x',
 	o: 'o',
 }
-export { Defaults, CHAR, Types }
+export { Defaults, Сhars, Types }
